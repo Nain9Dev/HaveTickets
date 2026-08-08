@@ -9,7 +9,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var apiBaseAddress = builder.HostEnvironment.IsDevelopment() 
     ? "http://localhost:5000" 
-    : "https://havetickets-api.onrender.com"; // To be created on Render later
+    : "https://havetickets.onrender.com"; // To be created on Render later
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
 builder.Services.AddScoped<SessionService>();
