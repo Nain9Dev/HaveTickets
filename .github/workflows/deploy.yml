@@ -32,6 +32,9 @@ jobs:
       - name: Add .nojekyll file
         run: touch release/wwwroot/.nojekyll
 
+      - name: Add 404.html fallback for Blazor routing
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+
       - name: Fix GitHub Pages 404 for _framework (Underscore workaround)
         run: |
           # Si un archivo empieza por "_" en GH Pages se ignora (Jekyll). .nojekyll lo soluciona, pero por seguridad:

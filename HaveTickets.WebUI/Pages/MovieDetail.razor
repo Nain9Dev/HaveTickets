@@ -226,7 +226,7 @@ else
             var response = await Http.PostAsJsonAsync("api/tickets/buy", request);
             if (response.IsSuccessStatusCode)
             {
-                Nav.NavigateTo("/my-tickets");
+                Nav.NavigateTo("my-tickets");
             }
             else
             {
