@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="HaveTickets.Api/HaveTickets.Api.csproj" />
+  <Project Path="HaveTickets.Application/HaveTickets.Application.csproj" />
+  <Project Path="HaveTickets.Domain/HaveTickets.Domain.csproj" />
+  <Project Path="HaveTickets.Infrastructure/HaveTickets.Infrastructure.csproj" />
+  <Project Path="HaveTickets.WebUI/HaveTickets.WebUI.csproj" />
+</Solution>

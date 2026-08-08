@@ -1,0 +1,6 @@
+@HaveTickets.Api_HostAddress = http://localhost:5001
+
+GET {{HaveTickets.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
