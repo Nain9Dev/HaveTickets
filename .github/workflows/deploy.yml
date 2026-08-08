@@ -1,0 +1,46 @@
+name: Deploy Blazor to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Blazor WebAssembly
+        run: dotnet publish HaveTickets.WebUI/HaveTickets.WebUI.csproj -c Release -o release --nologo
+
+      - name: Fix Base Href for GitHub Pages
+        run: |
+          sed -i 's/<base href="\/" \/>/<base href="\/HaveTickets\/" \/>/g' release/wwwroot/index.html
+
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      - name: Fix GitHub Pages 404 for _framework (Underscore workaround)
+        run: |
+          # Si un archivo empieza por "_" en GH Pages se ignora (Jekyll). .nojekyll lo soluciona, pero por seguridad:
+          if [ -d "release/wwwroot/_framework" ]; then
+            echo "Framework folder exists. Nojekyll will handle the underscores."
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./release/wwwroot
