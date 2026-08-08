@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using HaveTickets.Infrastructure;
+using HaveTickets.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +30,15 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
+builder.Services.AddInfrastructure("Data Source=havetickets.db");
+
 var app = builder.Build();
+
+// Inicializar la base de datos con datos de prueba
+using (var scope = app.Services.CreateScope())
+{
+    DataSeeder.Initialize(scope.ServiceProvider);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
