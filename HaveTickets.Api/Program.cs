@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using HaveTickets.Infrastructure;
 using HaveTickets.Infrastructure.Persistence;
+using HaveTickets.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,5 +50,8 @@ app.UseRateLimiter();
 
 app.MapGet("/", () => "HaveTickets API is running!")
    .RequireRateLimiting("fixed");
+
+app.MapMovieEndpoints();
+app.MapTicketEndpoints();
 
 app.Run();

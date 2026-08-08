@@ -1,0 +1,245 @@
+@page "/movie/{Id:guid}"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject SessionService Session
+
+<PageTitle>HaveTickets | Select Showtime</PageTitle>
+
+@if (movie == null)
+{
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading showtimes...</p>
+    </div>
+}
+else
+{
+    <div class="movie-detail-container glass-panel">
+        <div class="movie-detail-header">
+            <img src="@movie.PosterUrl" alt="@movie.Title" class="detail-poster" />
+            <div class="detail-info">
+                <span class="genre-badge">@movie.Genre</span>
+                <h1 class="gradient-text">@movie.Title</h1>
+                <p class="movie-desc">@movie.Description</p>
+                <div class="movie-meta">
+                    <span>⏱️ @movie.DurationMinutes min</span>
+                    <span>📅 @movie.ReleaseDate.ToString("MMM dd, yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="showtimes-section">
+            <h2>Available Showtimes</h2>
+            @if (movie.Showtimes.Any())
+            {
+                var groupedShowtimes = movie.Showtimes.GroupBy(s => s.Cinema.Name);
+                
+                @foreach (var cinemaGroup in groupedShowtimes)
+                {
+                    <div class="cinema-group">
+                        <h3 class="cinema-name">📍 @cinemaGroup.Key</h3>
+                        <p class="cinema-location">@cinemaGroup.First().Cinema.Location</p>
+                        
+                        <div class="showtime-buttons">
+                            @foreach (var showtime in cinemaGroup)
+                            {
+                                <button class="btn-showtime @(selectedShowtime?.Id == showtime.Id ? "selected" : "")" 
+                                        @onclick="() => selectedShowtime = showtime">
+                                    <div class="time">@showtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
+                                    <div class="price">$@showtime.Price.ToString("0.00")</div>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @if (selectedShowtime != null)
+                {
+                    <div class="checkout-section glass-panel">
+                        <div class="checkout-info">
+                            <h4>Selected: <span>@selectedShowtime.StartTime.ToLocalTime().ToString("MMM dd, HH:mm")</span></h4>
+                            <p>Cinema: @selectedShowtime.Cinema.Name</p>
+                            <h2>Total: $@selectedShowtime.Price.ToString("0.00")</h2>
+                        </div>
+                        <button class="btn-primary btn-lg" @onclick="BuyTicket" disabled="@isBuying">
+                            @(isBuying ? "Processing..." : "Confirm Purchase")
+                        </button>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-secondary">No showtimes available for this movie.</p>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .movie-detail-container {
+        padding: 3rem;
+    }
+    
+    .movie-detail-header {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--surface-border);
+    }
+    
+    .detail-poster {
+        width: 250px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    .detail-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .detail-info h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .cinema-group {
+        margin-bottom: 2rem;
+        background: rgba(0,0,0,0.2);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .cinema-name {
+        margin-bottom: 0.2rem;
+        color: var(--text-primary);
+    }
+    
+    .cinema-location {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .showtime-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .btn-showtime {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--surface-border);
+        color: var(--text-primary);
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    
+    .btn-showtime:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .btn-showtime.selected {
+        background: var(--primary-glow);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+    }
+    
+    .btn-showtime .time {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    
+    .btn-showtime .price {
+        font-size: 0.8rem;
+        color: #a78bfa;
+    }
+    
+    .checkout-section {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(139, 92, 246, 0.1);
+        border-color: rgba(139, 92, 246, 0.3);
+    }
+    
+    .btn-lg {
+        padding: 1rem 3rem;
+        font-size: 1.1rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .movie-detail-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .checkout-section {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private MovieDto? movie;
+    private ShowtimeDto? selectedShowtime;
+    private bool isBuying = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // For simplicity in the demo, we fetch all movies and filter. 
+        // In a real app, we'd have a GET /api/movies/{id} endpoint.
+        var allMovies = await Http.GetFromJsonAsync<List<MovieDto>>("api/movies");
+        if (allMovies != null)
+        {
+            movie = allMovies.FirstOrDefault(m => m.Id == Id);
+        }
+    }
+
+    private async Task BuyTicket()
+    {
+        if (selectedShowtime == null) return;
+        
+        isBuying = true;
+        try
+        {
+            var userId = await Session.GetUserIdAsync();
+            var request = new BuyTicketRequest
+            {
+                ShowtimeId = selectedShowtime.Id,
+                UserId = userId
+            };
+            
+            var response = await Http.PostAsJsonAsync("api/tickets/buy", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo("/my-tickets");
+            }
+            else
+            {
+                Console.WriteLine("Purchase failed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error buying ticket: {ex.Message}");
+        }
+        finally
+        {
+            isBuying = false;
+        }
+    }
+}

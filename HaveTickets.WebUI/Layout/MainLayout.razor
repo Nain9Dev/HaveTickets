@@ -1,3 +1,15 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-@Body
+<div class="page">
+    <nav class="navbar">
+        <a href="/" class="nav-brand gradient-text">HaveTickets</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Movies</a>
+            <a href="/my-tickets" class="nav-link">My Tickets</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        @Body
+    </main>
+</div>

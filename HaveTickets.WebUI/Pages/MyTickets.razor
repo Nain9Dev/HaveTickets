@@ -1,0 +1,234 @@
+@page "/my-tickets"
+@inject HttpClient Http
+@inject SessionService Session
+
+<PageTitle>HaveTickets | My Tickets</PageTitle>
+
+<div class="header-section">
+    <h1 class="gradient-text">My Tickets</h1>
+    <p class="text-secondary">Your purchased tickets are safely stored here.</p>
+</div>
+
+@if (isLoading)
+{
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your tickets...</p>
+    </div>
+}
+else if (tickets != null && tickets.Any())
+{
+    <div class="tickets-container">
+        @foreach (var ticket in tickets)
+        {
+            <div class="ticket-card">
+                <div class="ticket-visual">
+                    <img src="@ticket.PosterUrl" alt="@ticket.MovieTitle" />
+                </div>
+                <div class="ticket-details">
+                    <span class="seat-badge">Seat: @ticket.SeatNumber</span>
+                    <h3>@ticket.MovieTitle</h3>
+                    <p class="cinema-info">📍 @ticket.CinemaName</p>
+                    
+                    <div class="ticket-datetime">
+                        <div class="dt-block">
+                            <span class="label">DATE</span>
+                            <span class="value">@ticket.StartTime.ToLocalTime().ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <div class="dt-block">
+                            <span class="label">TIME</span>
+                            <span class="value">@ticket.StartTime.ToLocalTime().ToString("HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-qr">
+                    <!-- Simulate QR Code with CSS styling for demo purposes -->
+                    <div class="qr-mock">
+                        <div class="qr-inner"></div>
+                    </div>
+                    <span class="qr-token">@ticket.QRToken.Substring(0, 8).ToUpper()</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state glass-panel">
+        <h2>🎟️ No tickets yet!</h2>
+        <p>Go to the movies section and grab your tickets instantly.</p>
+        <a href="/" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem;">Browse Movies</a>
+    </div>
+}
+
+<style>
+    .header-section {
+        margin-bottom: 2rem;
+    }
+    
+    .tickets-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .ticket-card {
+        display: flex;
+        background: var(--surface-color);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--surface-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .ticket-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(139, 92, 246, 0.4);
+        box-shadow: 0 15px 40px rgba(139, 92, 246, 0.2);
+    }
+    
+    .ticket-visual {
+        width: 150px;
+        background: #000;
+    }
+    
+    .ticket-visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .ticket-details {
+        flex-grow: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        border-right: 2px dashed rgba(255,255,255,0.1);
+    }
+    
+    .seat-badge {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        width: fit-content;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cinema-info {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .ticket-datetime {
+        display: flex;
+        gap: 2rem;
+        margin-top: auto;
+    }
+    
+    .dt-block {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .dt-block .label {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        letter-spacing: 0.1em;
+    }
+    
+    .dt-block .value {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .ticket-qr {
+        width: 200px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.02);
+    }
+    
+    .qr-mock {
+        width: 100px;
+        height: 100px;
+        background: #fff;
+        padding: 8px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .qr-inner {
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(45deg, #000 25%, transparent 25%),
+            linear-gradient(-45deg, #000 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #000 75%),
+            linear-gradient(-45deg, transparent 75%, #000 75%);
+        background-size: 10px 10px;
+        background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    }
+    
+    .qr-token {
+        font-family: monospace;
+        letter-spacing: 0.1em;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .ticket-card {
+            flex-direction: column;
+        }
+        .ticket-visual {
+            width: 100%;
+            height: 200px;
+        }
+        .ticket-details {
+            border-right: none;
+            border-bottom: 2px dashed rgba(255,255,255,0.1);
+        }
+        .ticket-qr {
+            width: 100%;
+        }
+    }
+</style>
+
+@code {
+    private List<TicketDto>? tickets;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var userId = await Session.GetUserIdAsync();
+            tickets = await Http.GetFromJsonAsync<List<TicketDto>>($"api/tickets/user/{userId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching tickets: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
