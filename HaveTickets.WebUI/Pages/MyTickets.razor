@@ -6,7 +6,7 @@
 
 <div class="header-section">
     <h1 class="gradient-text">My Tickets</h1>
-    <p class="text-secondary">Your purchased tickets are safely stored here.</p>
+    <p class="text-secondary">Your tickets and entry passes are safely stored here.</p>
 </div>
 
 @if (isLoading)
@@ -18,35 +18,57 @@
 }
 else if (tickets != null && tickets.Any())
 {
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="notice-bar error">@errorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="notice-bar success">@successMessage</div>
+    }
+
     <div class="tickets-container">
         @foreach (var ticket in tickets)
         {
-            <div class="ticket-card">
+            <div class="ticket-card @(ticket.Status.ToLowerInvariant())">
                 <div class="ticket-visual">
                     <img src="@ticket.PosterUrl" alt="@ticket.MovieTitle" />
                 </div>
                 <div class="ticket-details">
-                    <span class="seat-badge">Seat: @ticket.SeatNumber</span>
+                    <div class="ticket-header-badges">
+                        <span class="seat-badge">Seat @ticket.Seat</span>
+                        <span class="status-badge status-@ticket.Status.ToLowerInvariant()">@ticket.Status</span>
+                    </div>
                     <h3>@ticket.MovieTitle</h3>
-                    <p class="cinema-info">📍 @ticket.CinemaName</p>
+                    <p class="cinema-info">📍 @ticket.CinemaName • @ticket.AuditoriumName</p>
                     
                     <div class="ticket-datetime">
                         <div class="dt-block">
                             <span class="label">DATE</span>
-                            <span class="value">@ticket.StartTime.ToLocalTime().ToString("MMM dd, yyyy")</span>
+                            <span class="value">@ticket.StartsAt.ToLocalTime().ToString("MMM dd, yyyy")</span>
                         </div>
                         <div class="dt-block">
                             <span class="label">TIME</span>
-                            <span class="value">@ticket.StartTime.ToLocalTime().ToString("HH:mm")</span>
+                            <span class="value">@ticket.StartsAt.ToLocalTime().ToString("HH:mm")</span>
+                        </div>
+                        <div class="dt-block">
+                            <span class="label">PRICE</span>
+                            <span class="value">@ticket.PricePaid.ToString("0.00") @ticket.Currency</span>
                         </div>
                     </div>
+
+                    @if (ticket.Status.Equals("Issued", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="ticket-actions">
+                            <button class="btn-cancel" @onclick="() => CancelTicketAsync(ticket.Id)">Cancel & Refund Seat</button>
+                        </div>
+                    }
                 </div>
                 <div class="ticket-qr">
-                    <!-- Simulate QR Code with CSS styling for demo purposes -->
-                    <div class="qr-mock">
-                        <div class="qr-inner"></div>
-                    </div>
-                    <span class="qr-token">@ticket.QRToken.Substring(0, 8).ToUpper()</span>
+                    <img src="@($"{Http.BaseAddress}api/v1/tickets/{ticket.Id}/qr")" 
+                         alt="QR Code @ticket.Code" 
+                         class="qr-image" />
+                    <span class="qr-token">@ticket.Code</span>
                 </div>
             </div>
         }
@@ -66,11 +88,30 @@ else
         margin-bottom: 2rem;
     }
     
+    .notice-bar {
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .notice-bar.error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid #ef4444;
+        color: #fca5a5;
+    }
+    .notice-bar.success {
+        background: rgba(34, 197, 94, 0.2);
+        border: 1px solid #22c55e;
+        color: #86efac;
+    }
+
     .tickets-container {
         display: flex;
         flex-direction: column;
         gap: 2rem;
-        max-width: 800px;
+        max-width: 850px;
         margin: 0 auto;
     }
     
@@ -82,17 +123,22 @@ else
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease, border-color 0.2s ease;
     }
     
     .ticket-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
         border-color: rgba(139, 92, 246, 0.4);
-        box-shadow: 0 15px 40px rgba(139, 92, 246, 0.2);
+    }
+
+    .ticket-card.cancelled {
+        opacity: 0.6;
+        filter: grayscale(0.5);
     }
     
     .ticket-visual {
-        width: 150px;
+        width: 140px;
+        min-width: 140px;
         background: #000;
     }
     
@@ -107,25 +153,41 @@ else
         padding: 1.5rem;
         display: flex;
         flex-direction: column;
-        border-right: 2px dashed rgba(255,255,255,0.1);
+        border-right: 2px dashed rgba(255,255,255,0.12);
+    }
+
+    .ticket-header-badges {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
     }
     
     .seat-badge {
         background: rgba(59, 130, 246, 0.2);
         color: #60a5fa;
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 600;
-        width: fit-content;
-        margin-bottom: 0.5rem;
     }
+
+    .status-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-issued { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .status-checkedin { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #f87171; }
     
     .cinema-info {
         color: var(--text-secondary);
         font-size: 0.9rem;
-        margin-top: 0.5rem;
-        margin-bottom: 1.5rem;
+        margin-top: 0.25rem;
+        margin-bottom: 1rem;
     }
     
     .ticket-datetime {
@@ -147,11 +209,34 @@ else
     
     .dt-block .value {
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1rem;
+    }
+
+    .ticket-actions {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(248, 113, 113, 0.15);
+        border-color: #f87171;
     }
     
     .ticket-qr {
-        width: 200px;
+        width: 180px;
+        min-width: 180px;
         padding: 1.5rem;
         display: flex;
         flex-direction: column;
@@ -160,32 +245,21 @@ else
         background: rgba(255,255,255,0.02);
     }
     
-    .qr-mock {
-        width: 100px;
-        height: 100px;
+    .qr-image {
+        width: 110px;
+        height: 110px;
         background: #fff;
-        padding: 8px;
+        padding: 6px;
         border-radius: 8px;
-        margin-bottom: 1rem;
-    }
-    
-    .qr-inner {
-        width: 100%;
-        height: 100%;
-        background-image: 
-            linear-gradient(45deg, #000 25%, transparent 25%),
-            linear-gradient(-45deg, #000 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #000 75%),
-            linear-gradient(-45deg, transparent 75%, #000 75%);
-        background-size: 10px 10px;
-        background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        margin-bottom: 0.75rem;
     }
     
     .qr-token {
         font-family: monospace;
-        letter-spacing: 0.1em;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
+        letter-spacing: 0.12em;
+        font-size: 0.85rem;
+        color: #a78bfa;
+        font-weight: 600;
     }
     
     .empty-state {
@@ -199,7 +273,7 @@ else
         }
         .ticket-visual {
             width: 100%;
-            height: 200px;
+            height: 180px;
         }
         .ticket-details {
             border-right: none;
@@ -212,15 +286,24 @@ else
 </style>
 
 @code {
-    private List<TicketDto>? tickets;
+    private IReadOnlyList<TicketResponse>? tickets;
     private bool isLoading = true;
+    private string? errorMessage;
+    private string? successMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadTicketsAsync();
+    }
+
+    private async Task LoadTicketsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
         try
         {
             var userId = await Session.GetUserIdAsync();
-            tickets = await Http.GetFromJsonAsync<List<TicketDto>>($"api/tickets/user/{userId}");
+            tickets = await Http.GetFromJsonAsync<IReadOnlyList<TicketResponse>>($"api/v1/tickets?holderId={userId}");
         }
         catch (Exception ex)
         {
@@ -229,6 +312,31 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task CancelTicketAsync(Guid ticketId)
+    {
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var userId = await Session.GetUserIdAsync();
+            var response = await Http.DeleteAsync($"api/v1/tickets/{ticketId}?holderId={userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Ticket cancelled and seat released successfully.";
+                await LoadTicketsAsync();
+            }
+            else
+            {
+                var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+                errorMessage = problem?.Detail ?? "Unable to cancel ticket.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error cancelling ticket: {ex.Message}";
         }
     }
 }

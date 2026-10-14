@@ -1,0 +1,53 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,csproj,props,targets,slnx}]
+indent_size = 2
+
+[*.{md,razor,html,css}]
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# Namespaces and usings
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:warning
+
+# Prefer explicit, readable code over cleverness
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_braces = true:warning
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+
+# Immutability by default
+dotnet_style_readonly_field = true:warning
+csharp_prefer_static_local_function = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+
+# Nullability must not be silenced
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8603.severity = error
+dotnet_diagnostic.CS8618.severity = error
+
+# Async correctness
+dotnet_diagnostic.CA2007.severity = none   # ConfigureAwait not needed in ASP.NET Core / Blazor
+dotnet_diagnostic.CA1848.severity = none   # LoggerMessage source-gen is overkill for this size
+# Domain types are named after the ubiquitous language (Error, Order...), not
+# after what reads well from Visual Basic.
+dotnet_diagnostic.CA1716.severity = none
+
+[*.Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none   # Underscores are intentional in test names

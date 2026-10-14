@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- xUnit1051 asks for TestContext.Current.CancellationToken on every call. These
+         requests run against an in-memory server and finish in milliseconds, so
+         threading a token through each call would add noise without a benefit. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HaveTickets.Api\HaveTickets.Api.csproj" />
+    <ProjectReference Include="..\HaveTickets.Contracts\HaveTickets.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

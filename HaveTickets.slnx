@@ -1,7 +1,14 @@
 <Solution>
-  <Project Path="HaveTickets.Api/HaveTickets.Api.csproj" />
-  <Project Path="HaveTickets.Application/HaveTickets.Application.csproj" />
-  <Project Path="HaveTickets.Domain/HaveTickets.Domain.csproj" />
-  <Project Path="HaveTickets.Infrastructure/HaveTickets.Infrastructure.csproj" />
-  <Project Path="HaveTickets.WebUI/HaveTickets.WebUI.csproj" />
+  <Folder Name="/src/">
+    <Project Path="HaveTickets.Api/HaveTickets.Api.csproj" />
+    <Project Path="HaveTickets.Application/HaveTickets.Application.csproj" />
+    <Project Path="HaveTickets.Contracts/HaveTickets.Contracts.csproj" />
+    <Project Path="HaveTickets.Domain/HaveTickets.Domain.csproj" />
+    <Project Path="HaveTickets.Infrastructure/HaveTickets.Infrastructure.csproj" />
+    <Project Path="HaveTickets.WebUI/HaveTickets.WebUI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="HaveTickets.Api.Tests/HaveTickets.Api.Tests.csproj" />
+    <Project Path="HaveTickets.Domain.Tests/HaveTickets.Domain.Tests.csproj" />
+  </Folder>
 </Solution>

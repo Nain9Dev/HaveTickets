@@ -8,8 +8,8 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var apiBaseAddress = builder.HostEnvironment.IsDevelopment() 
-    ? "http://localhost:5000" 
-    : "https://havetickets.onrender.com"; // To be created on Render later
+    ? "http://localhost:8190/" 
+    : "https://havetickets.onrender.com/"; // To be configured for production hosting
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
 builder.Services.AddScoped<SessionService>();

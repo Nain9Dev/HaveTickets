@@ -1,59 +1,43 @@
-using HaveTickets.Domain.Entities;
+using HaveTickets.Domain.Catalog;
+using HaveTickets.Domain.Scheduling;
+using HaveTickets.Domain.Ticketing;
+using HaveTickets.Domain.Venues;
 using Microsoft.EntityFrameworkCore;
 
 namespace HaveTickets.Infrastructure.Persistence;
 
-public class HaveTicketsDbContext : DbContext
+public sealed class HaveTicketsDbContext(DbContextOptions<HaveTicketsDbContext> options) : DbContext(options)
 {
-    public HaveTicketsDbContext(DbContextOptions<HaveTicketsDbContext> options) : base(options)
-    {
-    }
+    public DbSet<Movie> Movies => Set<Movie>();
 
-    public DbSet<Movie> Movies { get; set; } = null!;
-    public DbSet<Cinema> Cinemas { get; set; } = null!;
-    public DbSet<Showtime> Showtimes { get; set; } = null!;
-    public DbSet<Ticket> Tickets { get; set; } = null!;
+    public DbSet<Cinema> Cinemas => Set<Cinema>();
+
+    public DbSet<Auditorium> Auditoriums => Set<Auditorium>();
+
+    public DbSet<Showtime> Showtimes => Set<Showtime>();
+
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<Ticket> Tickets => Set<Ticket>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(HaveTicketsDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Movie>(entity =>
+        if (Database.IsSqlite())
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(150);
-        });
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var dateTimeOffsetProperties = entityType.GetProperties()
+                    .Where(p => p.ClrType == typeof(DateTimeOffset) || p.ClrType == typeof(DateTimeOffset?));
 
-        modelBuilder.Entity<Cinema>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
-        });
-
-        modelBuilder.Entity<Showtime>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.Movie)
-                .WithMany(m => m.Showtimes)
-                .HasForeignKey(e => e.MovieId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(e => e.Cinema)
-                .WithMany(c => c.Showtimes)
-                .HasForeignKey(e => e.CinemaId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Ticket>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.Showtime)
-                .WithMany(s => s.Tickets)
-                .HasForeignKey(e => e.ShowtimeId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
-            // Asignar asiento automáticamente para la demo
-            entity.Property(e => e.SeatNumber).HasDefaultValue("General");
-        });
+                foreach (var property in dateTimeOffsetProperties)
+                {
+                    property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.DateTimeOffsetToBinaryConverter());
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The wire contract between the API and any client. Dependency-free on
+       purpose: the Blazor client references this and nothing else from the
+       back end, so the presentation layer physically cannot reach the domain,
+       the use cases or the database. -->
+
+</Project>

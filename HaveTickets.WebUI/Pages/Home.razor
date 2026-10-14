@@ -26,7 +26,7 @@ else
                 <div class="movie-info">
                     <span class="genre-badge">@movie.Genre</span>
                     <h3>@movie.Title</h3>
-                    <p class="movie-desc">@movie.Description</p>
+                    <p class="movie-desc">@movie.Synopsis</p>
                     <div class="movie-meta">
                         <span>⏱️ @movie.DurationMinutes min</span>
                         <span>📅 @movie.ReleaseDate.ToString("MMM dd, yyyy")</span>
@@ -120,13 +120,14 @@ else
 </style>
 
 @code {
-    private List<MovieDto>? movies;
+    private IReadOnlyList<MovieSummaryResponse>? movies;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            movies = await Http.GetFromJsonAsync<List<MovieDto>>("api/movies");
+            var paged = await Http.GetFromJsonAsync<PagedResponse<MovieSummaryResponse>>("api/v1/movies");
+            movies = paged?.Items;
         }
         catch (Exception ex)
         {

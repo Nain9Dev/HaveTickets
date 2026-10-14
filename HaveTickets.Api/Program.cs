@@ -1,57 +1,59 @@
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Mvc;
+using HaveTickets.Api.Endpoints;
+using HaveTickets.Api.Extensions;
+using HaveTickets.Application;
 using HaveTickets.Infrastructure;
 using HaveTickets.Infrastructure.Persistence;
-using HaveTickets.Api.Endpoints;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configurar Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+string connectionString = builder.Configuration.GetConnectionString("HaveTickets")
+    ?? "Data Source=havetickets.db";
 
-// CORS para acceso desde GitHub Pages
-builder.Services.AddCors(options =>
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(connectionString);
+
+builder.Services.AddForwardedHeaders();
+builder.Services.AddConfiguredCors(builder.Configuration);
+builder.Services.AddConfiguredRateLimiting(builder.Configuration);
+builder.Services.AddConfiguredHealthChecks();
+builder.Services.AddProblemDetails();
+builder.Services.AddOpenApi();
+
+WebApplication app = builder.Build();
+
+await using (AsyncServiceScope scope = app.Services.CreateAsyncScope())
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-});
-
-// Rate Limiting para seguridad (anti-DDoS)
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter(policyName: "fixed", config =>
-    {
-        config.PermitLimit = 100;
-        config.Window = TimeSpan.FromMinutes(1);
-        config.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        config.QueueLimit = 2;
-    });
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-});
-
-builder.Services.AddInfrastructure("Data Source=havetickets.db");
-
-var app = builder.Build();
-
-// Inicializar la base de datos con datos de prueba
-using (var scope = app.Services.CreateScope())
-{
-    DataSeeder.Initialize(scope.ServiceProvider);
+    HaveTicketsDbContext database = scope.ServiceProvider.GetRequiredService<HaveTicketsDbContext>();
+    await database.Database.EnsureCreatedAsync();
+    await DatabaseSeeder.SeedAsync(database, scope.ServiceProvider.GetRequiredService<TimeProvider>());
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseForwardedHeaders();
+app.UseExceptionHandler();
 
-app.UseCors("AllowAll");
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.UseCors();
 app.UseRateLimiter();
 
-app.MapGet("/", () => "HaveTickets API is running!")
-   .RequireRateLimiting("fixed");
+app.MapOpenApi();
+app.MapScalarApiReference("/docs");
 
-app.MapMovieEndpoints();
+app.MapGet("/", () => Results.Redirect("/docs")).ExcludeFromDescription();
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
+
+app.MapCatalogEndpoints();
 app.MapTicketEndpoints();
 
-app.Run();
+await app.RunAsync();
+
+/// <summary>Entry point marker so integration tests can host the API in memory.</summary>
+public partial class Program;

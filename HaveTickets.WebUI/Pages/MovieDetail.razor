@@ -18,9 +18,9 @@ else
         <div class="movie-detail-header">
             <img src="@movie.PosterUrl" alt="@movie.Title" class="detail-poster" />
             <div class="detail-info">
-                <span class="genre-badge">@movie.Genre</span>
+                <span class="genre-badge">@movie.Genre • @movie.AgeRating</span>
                 <h1 class="gradient-text">@movie.Title</h1>
-                <p class="movie-desc">@movie.Description</p>
+                <p class="movie-desc">@movie.Synopsis</p>
                 <div class="movie-meta">
                     <span>⏱️ @movie.DurationMinutes min</span>
                     <span>📅 @movie.ReleaseDate.ToString("MMM dd, yyyy")</span>
@@ -30,7 +30,7 @@ else
 
         <div class="showtimes-section">
             <h2>Available Showtimes</h2>
-            @if (movie.Showtimes.Any())
+            @if (movie.Showtimes != null && movie.Showtimes.Any())
             {
                 var groupedShowtimes = movie.Showtimes.GroupBy(s => s.Cinema.Name);
                 
@@ -38,31 +38,74 @@ else
                 {
                     <div class="cinema-group">
                         <h3 class="cinema-name">📍 @cinemaGroup.Key</h3>
-                        <p class="cinema-location">@cinemaGroup.First().Cinema.Location</p>
+                        <p class="cinema-location">@cinemaGroup.First().Cinema.City, @cinemaGroup.First().Cinema.Address</p>
                         
                         <div class="showtime-buttons">
                             @foreach (var showtime in cinemaGroup)
                             {
                                 <button class="btn-showtime @(selectedShowtime?.Id == showtime.Id ? "selected" : "")" 
-                                        @onclick="() => selectedShowtime = showtime">
-                                    <div class="time">@showtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
-                                    <div class="price">$@showtime.Price.ToString("0.00")</div>
+                                        @onclick="() => SelectShowtimeAsync(showtime)">
+                                    <div class="time">@showtime.StartsAt.ToLocalTime().ToString("HH:mm")</div>
+                                    <div class="price">@showtime.Price.ToString("0.00") @showtime.Currency</div>
+                                    <div class="auditorium">@showtime.AuditoriumName (@showtime.SeatsAvailable seats)</div>
                                 </button>
                             }
                         </div>
                     </div>
                 }
-                
-                @if (selectedShowtime != null)
+
+                @if (selectedShowtime != null && seatMap != null)
                 {
+                    <div class="seatmap-section glass-panel">
+                        <h3>Select Your Seats</h3>
+                        <p class="text-secondary">Pick up to @seatMap.MaxSeatsPerOrder seats in @seatMap.AuditoriumName</p>
+                        
+                        <div class="screen-indicator">
+                            <div class="screen-bar"></div>
+                            <span class="screen-label">SCREEN</span>
+                        </div>
+
+                        <div class="seat-grid" style="--seats-per-row: @seatMap.SeatsPerRow;">
+                            @for (int r = 0; r < seatMap.RowCount; r++)
+                            {
+                                char rowLetter = (char)('A' + r);
+                                for (int c = 1; c <= seatMap.SeatsPerRow; c++)
+                                {
+                                    string seatId = $"{rowLetter}{c}";
+                                    bool isOccupied = seatMap.OccupiedSeats.Contains(seatId, StringComparer.OrdinalIgnoreCase);
+                                    bool isSelected = selectedSeats.Contains(seatId);
+
+                                    <button type="button"
+                                            class="seat-btn @(isOccupied ? "occupied" : isSelected ? "selected" : "available")"
+                                            disabled="@isOccupied"
+                                            @onclick="() => ToggleSeat(seatId, isOccupied)">
+                                        @seatId
+                                    </button>
+                                }
+                            }
+                        </div>
+
+                        <div class="seat-legend">
+                            <span class="legend-item"><span class="legend-box available"></span> Available</span>
+                            <span class="legend-item"><span class="legend-box selected"></span> Selected</span>
+                            <span class="legend-item"><span class="legend-box occupied"></span> Sold</span>
+                        </div>
+                    </div>
+
                     <div class="checkout-section glass-panel">
                         <div class="checkout-info">
-                            <h4>Selected: <span>@selectedShowtime.StartTime.ToLocalTime().ToString("MMM dd, HH:mm")</span></h4>
-                            <p>Cinema: @selectedShowtime.Cinema.Name</p>
-                            <h2>Total: $@selectedShowtime.Price.ToString("0.00")</h2>
+                            <h4>Selected: <span>@selectedShowtime.StartsAt.ToLocalTime().ToString("MMM dd, HH:mm")</span></h4>
+                            <p>Seats: @(selectedSeats.Count == 0 ? "None chosen" : string.Join(", ", selectedSeats))</p>
+                            <h2>Total: @((selectedSeats.Count * selectedShowtime.Price).ToString("0.00")) @selectedShowtime.Currency</h2>
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <p class="error-msg">@errorMessage</p>
+                            }
                         </div>
-                        <button class="btn-primary btn-lg" @onclick="BuyTicket" disabled="@isBuying">
-                            @(isBuying ? "Processing..." : "Confirm Purchase")
+                        <button class="btn-primary btn-lg" 
+                                @onclick="BuyTicketAsync" 
+                                disabled="@(isBuying || selectedSeats.Count == 0)">
+                            @(isBuying ? "Processing..." : $"Confirm Purchase ({selectedSeats.Count})")
                         </button>
                     </div>
                 }
@@ -158,12 +201,112 @@ else
     }
     
     .btn-showtime .price {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         color: #a78bfa;
     }
+
+    .btn-showtime .auditorium {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .seatmap-section {
+        margin-top: 2rem;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .screen-indicator {
+        margin: 1.5rem auto 2.5rem;
+        max-width: 500px;
+    }
+
+    .screen-bar {
+        height: 6px;
+        background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+        border-radius: 4px;
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
+    }
+
+    .screen-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        color: var(--text-secondary);
+        margin-top: 6px;
+        display: block;
+    }
+
+    .seat-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--seats-per-row, 10), minmax(36px, 48px));
+        gap: 8px;
+        justify-content: center;
+        margin: 1.5rem 0;
+    }
+
+    .seat-btn {
+        height: 38px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.15);
+        transition: all 0.15s ease;
+    }
+
+    .seat-btn.available {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+
+    .seat-btn.available:hover {
+        background: rgba(139, 92, 246, 0.4);
+        border-color: #a78bfa;
+    }
+
+    .seat-btn.selected {
+        background: #8b5cf6;
+        color: #fff;
+        border-color: #c4b5fd;
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+    }
+
+    .seat-btn.occupied {
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.2);
+        border-color: transparent;
+        cursor: not-allowed;
+    }
+
+    .seat-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .legend-box {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+    .legend-box.available { background: rgba(255, 255, 255, 0.2); }
+    .legend-box.selected { background: #8b5cf6; }
+    .legend-box.occupied { background: rgba(255, 255, 255, 0.05); }
     
     .checkout-section {
-        margin-top: 3rem;
+        margin-top: 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -174,6 +317,12 @@ else
     .btn-lg {
         padding: 1rem 3rem;
         font-size: 1.1rem;
+    }
+
+    .error-msg {
+        color: #f87171;
+        font-size: 0.85rem;
+        margin-top: 4px;
     }
     
     @@media (max-width: 768px) {
@@ -194,48 +343,90 @@ else
     [Parameter]
     public Guid Id { get; set; }
 
-    private MovieDto? movie;
-    private ShowtimeDto? selectedShowtime;
+    private MovieDetailResponse? movie;
+    private ShowtimeResponse? selectedShowtime;
+    private SeatMapResponse? seatMap;
+    private readonly HashSet<string> selectedSeats = new(StringComparer.OrdinalIgnoreCase);
     private bool isBuying = false;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        // For simplicity in the demo, we fetch all movies and filter. 
-        // In a real app, we'd have a GET /api/movies/{id} endpoint.
-        var allMovies = await Http.GetFromJsonAsync<List<MovieDto>>("api/movies");
-        if (allMovies != null)
+        try
         {
-            movie = allMovies.FirstOrDefault(m => m.Id == Id);
+            movie = await Http.GetFromJsonAsync<MovieDetailResponse>($"api/v1/movies/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie details: {ex.Message}");
         }
     }
 
-    private async Task BuyTicket()
+    private async Task SelectShowtimeAsync(ShowtimeResponse showtime)
     {
-        if (selectedShowtime == null) return;
+        selectedShowtime = showtime;
+        selectedSeats.Clear();
+        errorMessage = null;
+
+        try
+        {
+            seatMap = await Http.GetFromJsonAsync<SeatMapResponse>($"api/v1/showtimes/{showtime.Id}/seat-map");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching seat map: {ex.Message}");
+        }
+    }
+
+    private void ToggleSeat(string seatId, bool isOccupied)
+    {
+        if (isOccupied) return;
+
+        if (selectedSeats.Contains(seatId))
+        {
+            selectedSeats.Remove(seatId);
+        }
+        else
+        {
+            if (seatMap != null && selectedSeats.Count >= seatMap.MaxSeatsPerOrder)
+            {
+                errorMessage = $"You can select a maximum of {seatMap.MaxSeatsPerOrder} seats per order.";
+                return;
+            }
+            errorMessage = null;
+            selectedSeats.Add(seatId);
+        }
+    }
+
+    private async Task BuyTicketAsync()
+    {
+        if (selectedShowtime == null || selectedSeats.Count == 0) return;
         
         isBuying = true;
+        errorMessage = null;
         try
         {
             var userId = await Session.GetUserIdAsync();
-            var request = new BuyTicketRequest
-            {
-                ShowtimeId = selectedShowtime.Id,
-                UserId = userId
-            };
+            var request = new PurchaseTicketsRequest(
+                selectedShowtime.Id,
+                userId,
+                selectedSeats.ToList()
+            );
             
-            var response = await Http.PostAsJsonAsync("api/tickets/buy", request);
+            var response = await Http.PostAsJsonAsync("api/v1/orders", request);
             if (response.IsSuccessStatusCode)
             {
                 Nav.NavigateTo("my-tickets");
             }
             else
             {
-                Console.WriteLine("Purchase failed.");
+                var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+                errorMessage = problem?.Detail ?? "Unable to complete ticket purchase. A selected seat may already be taken.";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error buying ticket: {ex.Message}");
+            errorMessage = $"Error buying ticket: {ex.Message}";
         }
         finally
         {
