@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,19 +27,16 @@ jobs:
       - name: Publish Blazor WebAssembly
         run: dotnet publish HaveTickets.WebUI/HaveTickets.WebUI.csproj -c Release -o release --nologo
 
-      - name: Fix Base Href for GitHub Pages
+      - name: Add CNAME and .nojekyll files
         run: |
-          sed -i 's/<base href="\/" \/>/<base href="\/HaveTickets\/" \/>/g' release/wwwroot/index.html
-
-      - name: Add .nojekyll file
-        run: touch release/wwwroot/.nojekyll
+          echo "tickets.naindev.com" > release/wwwroot/CNAME
+          touch release/wwwroot/.nojekyll
 
       - name: Add 404.html fallback for Blazor routing
         run: cp release/wwwroot/index.html release/wwwroot/404.html
 
       - name: Fix GitHub Pages 404 for _framework (Underscore workaround)
         run: |
-          # Si un archivo empieza por "_" en GH Pages se ignora (Jekyll). .nojekyll lo soluciona, pero por seguridad:
           if [ -d "release/wwwroot/_framework" ]; then
             echo "Framework folder exists. Nojekyll will handle the underscores."
           fi
@@ -48,3 +46,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./release/wwwroot
+          cname: tickets.naindev.com

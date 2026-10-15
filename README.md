@@ -1,5 +1,11 @@
 # HaveTickets
 
+[![Live Demo](https://img.shields.io/badge/Demo%20Online-tickets.naindev.com-38bdf8?style=flat-square&logo=googlechrome&logoColor=white)](https://tickets.naindev.com/)
+[![.NET 10](https://img.shields.io/badge/.NET%2010-Blazor%20WASM-blue?style=flat-square)](https://tickets.naindev.com/)
+[![Zero Cost](https://img.shields.io/badge/Hosting-0%2C00%20%E2%82%AC%20FOSS-emerald?style=flat-square)](https://tickets.naindev.com/)
+
+**Demo Online Interactiva:** [https://tickets.naindev.com/](https://tickets.naindev.com/) (Blazor WebAssembly en cliente con motor determinista de asignación de butacas, coste 0,00 €)
+
 A deterministic, high-concurrency cinema ticketing and seat reservation platform built with .NET 10, Clean Architecture, and dual frontends (Blazor WebAssembly and Vue 3 + TypeScript).
 
 Part of the **NainDev** engineering portfolio.

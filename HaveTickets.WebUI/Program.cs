@@ -9,9 +9,14 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var apiBaseAddress = builder.HostEnvironment.IsDevelopment() 
     ? "http://localhost:8190/" 
-    : "https://havetickets.onrender.com/"; // To be configured for production hosting
+    : builder.HostEnvironment.BaseAddress;
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
+builder.Services.AddTransient<OfflineFallbackHandler>();
+builder.Services.AddScoped(sp =>
+{
+    var handler = sp.GetRequiredService<OfflineFallbackHandler>();
+    return new HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress) };
+});
 builder.Services.AddScoped<SessionService>();
 
 await builder.Build().RunAsync();
