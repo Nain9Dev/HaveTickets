@@ -1,8 +1,17 @@
-# HaveTickets
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
+  <img alt="HaveTickets Architectural Blueprint" src="docs/assets/banner-dark.svg" width="100%">
+</picture>
 
-[![Live Demo](https://img.shields.io/badge/Demo%20Online-tickets.naindev.com-38bdf8?style=flat-square&logo=googlechrome&logoColor=white)](https://tickets.naindev.com/)
+# HaveTickets — Cinema Ticketing & Reservation Platform
+
+[![ci](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml/badge.svg)](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml)
+[![Demo Online](https://img.shields.io/badge/demo-online-blueviolet?style=flat&logo=githubpages&logoColor=white)](https://tickets.naindev.com/)
+[![Ecosystem Status](https://img.shields.io/badge/status-100%25%20operational-success)](https://status.naindev.com)
+[![Engineering Handbook](https://img.shields.io/badge/paved%20road-.NET%2010%20%2B%20Blazor-blue)](https://github.com/Nain9Dev/engineering-handbook)
+[![Cost](https://img.shields.io/badge/cost-0.00_%E2%82%AC-22c55e)](https://github.com/Nain9Dev/engineering-handbook/blob/main/governance/zero-cost-philosophy.md)
 [![.NET 10](https://img.shields.io/badge/.NET%2010-Blazor%20WASM-blue?style=flat-square)](https://tickets.naindev.com/)
-[![Zero Cost](https://img.shields.io/badge/Hosting-0%2C00%20%E2%82%AC%20FOSS-emerald?style=flat-square)](https://tickets.naindev.com/)
 
 **Demo Online Interactiva:** [https://tickets.naindev.com/](https://tickets.naindev.com/) (Blazor WebAssembly en cliente con motor determinista de asignación de butacas, coste 0,00 €)
 
