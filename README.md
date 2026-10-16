@@ -7,10 +7,14 @@
 # HaveTickets — Cinema Ticketing & Reservation Platform
 
 [![ci](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml/badge.svg)](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Nain9Dev/HaveTickets/actions/workflows/codeql.yml/badge.svg)](https://github.com/Nain9Dev/HaveTickets/actions/workflows/codeql.yml)
 [![Demo Online](https://img.shields.io/badge/demo-online-blueviolet?style=flat&logo=githubpages&logoColor=white)](https://tickets.naindev.com/)
 [![Ecosystem Status](https://img.shields.io/badge/status-100%25%20operational-success)](https://status.naindev.com)
 [![Engineering Handbook](https://img.shields.io/badge/paved%20road-.NET%2010%20%2B%20Blazor-blue)](https://github.com/Nain9Dev/engineering-handbook)
 [![Cost](https://img.shields.io/badge/cost-0.00_%E2%82%AC-22c55e)](https://github.com/Nain9Dev/engineering-handbook/blob/main/governance/zero-cost-philosophy.md)
+[![Architecture Tests](https://img.shields.io/badge/architecture%20tests-NetArchTest%20enforced-blueviolet)](HaveTickets.Api.Tests/ArchitectureTests.cs)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in-Codespaces-1f2937?style=flat&logo=github&logoColor=white)](https://codespaces.new/Nain9Dev/HaveTickets)
+[![Tests](https://img.shields.io/badge/tests-120%20passing-success)](HaveTickets.Domain.Tests/)
 [![.NET 10](https://img.shields.io/badge/.NET%2010-Blazor%20WASM-blue?style=flat-square)](https://tickets.naindev.com/)
 
 **Demo Online Interactiva:** [https://tickets.naindev.com/](https://tickets.naindev.com/) (Blazor WebAssembly en cliente con motor determinista de asignación de butacas, coste 0,00 €)
@@ -35,7 +39,37 @@ Part of the **NainDev** engineering portfolio.
 
 ---
 
-## Solution Structure
+## Architecture & C4 Container Diagram
+
+```mermaid
+graph TD
+    Blazor["HaveTickets.WebUI<br/>(Blazor WebAssembly / .NET 10)"]
+    VueClient["HaveTickets.Client<br/>(Vue 3 + TypeScript / Vite)"]
+    API["HaveTickets.Api<br/>(ASP.NET Core Minimal APIs :5005)"]
+    Contracts["HaveTickets.Contracts<br/>(Independent Contract DTOs)"]
+    AppLayer["HaveTickets.Application<br/>(CQRS / Command Handlers / Services)"]
+    DomainLayer["HaveTickets.Domain<br/>(Aggregate Roots / Value Objects / Money)"]
+    InfraLayer["HaveTickets.Infrastructure<br/>(EF Core / SQLite / QRCoder)"]
+    DB[("SQLite Database<br/>(Partial Unique Index UX_ActiveSeat)")]
+
+    Blazor -->|HTTP / JSON| API
+    VueClient -->|HTTP / JSON| API
+    API --> Contracts
+    API --> AppLayer
+    AppLayer --> DomainLayer
+    AppLayer --> InfraLayer
+    InfraLayer --> DB
+
+    style DomainLayer fill:#182B49,stroke:#fff,stroke-width:2px,color:#fff
+    style AppLayer fill:#2A4878,stroke:#fff,color:#fff
+    style InfraLayer fill:#2A4878,stroke:#fff,color:#fff
+    style API fill:#512BD4,stroke:#fff,stroke-width:2px,color:#fff
+    style Blazor fill:#10B981,stroke:#fff,stroke-width:2px,color:#fff
+    style VueClient fill:#0284C7,stroke:#fff,stroke-width:2px,color:#fff
+    style DB fill:#336791,stroke:#fff,color:#fff
+```
+
+### Solution Projects
 
 ```
 HaveTickets.slnx
@@ -45,7 +79,7 @@ HaveTickets.slnx
 ├── HaveTickets.Infrastructure     # EF Core, SQLite persistence, read models, QR generation
 ├── HaveTickets.Api                # Minimal APIs, Scalar OpenAPI, rate limiting
 ├── HaveTickets.Domain.Tests       # xUnit v3 + Shouldly + CsCheck (Property-Based Testing)
-├── HaveTickets.Api.Tests          # In-memory integration suite with isolated SQLite & time-travel
+├── HaveTickets.Api.Tests          # In-memory integration suite + NetArchTest guardrails
 ├── HaveTickets.WebUI              # Blazor WebAssembly client
 └── HaveTickets.Client             # Vue 3 + TypeScript Vite client
 ```
@@ -87,3 +121,23 @@ npm --prefix HaveTickets.Client run build
 ## Architecture Documentation
 
 See [docs/00-architecture-and-ticketing-invariants.md](docs/00-architecture-and-ticketing-invariants.md) for detailed analysis of the domain invariants, database concurrency controls, and failure mode guarantees.
+
+---
+
+## FinOps & Zero-Cost Architecture (0.00 €)
+
+<details>
+<summary><b>Inspect 0.00 € Infrastructure Topology &amp; Governance</b></summary>
+
+In alignment with the [NainDev Zero-Cost Infrastructure Philosophy](https://github.com/Nain9Dev/engineering-handbook/blob/main/governance/zero-cost-philosophy.md), this system operates at strictly **0.00 €/month** recurring cloud cost:
+
+| Component | Architecture Mechanism | Provider / Runtime | Monthly Cost |
+|:---|:---|:---|:---|
+| **Global Edge Delivery** | Anycast CDN, HTTP/3, TLS termination &amp; DDoS mitigation | Cloudflare Free Tier | 0.00 € |
+| **Client Application Shell** | Zero-dependency static Blazor WASM &amp; Vue 3 assets | GitHub Pages / Edge CDN | 0.00 € |
+| **Compute Execution** | Deterministic browser WebAssembly evaluation &amp; SQLite in-memory | Client WASM Engine | 0.00 € |
+| **CI/CD Quality Gate** | Continuous integration, NetArchTest enforcement &amp; security scans | GitHub Actions (Linux Runner) | 0.00 € |
+| **Total Recurring Cost** | **Zero billable cloud dependencies** | | **0.00 €** |
+
+</details>
+
