@@ -4,8 +4,8 @@
   <img alt="HaveTickets Architectural Blueprint" src="docs/assets/banner-dark.svg" width="100%">
 </picture>
 
-# HaveTickets — Cinema Ticketing & Reservation Platform
-
+[![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](README.md)
+[![Español](https://img.shields.io/badge/Idioma-Espa%C3%B1ol-emerald?style=flat-square)](README.es.md)
 [![ci](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml/badge.svg)](https://github.com/Nain9Dev/HaveTickets/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Nain9Dev/HaveTickets/actions/workflows/codeql.yml/badge.svg)](https://github.com/Nain9Dev/HaveTickets/actions/workflows/codeql.yml)
 [![Demo Online](https://img.shields.io/badge/demo-online-blueviolet?style=flat&logo=githubpages&logoColor=white)](https://tickets.naindev.com/)

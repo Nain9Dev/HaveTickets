@@ -5,6 +5,7 @@ import MovieDetailView from './views/MovieDetailView.vue';
 import WalletView from './views/WalletView.vue';
 import DoorScannerView from './views/DoorScannerView.vue';
 import type { OrderResponse } from './types/contracts';
+import { currentLocale, setLocale, t } from './locales/i18n';
 
 type Tab = 'catalog' | 'wallet' | 'scanner';
 
@@ -35,7 +36,7 @@ function onOrderPlaced(_order: OrderResponse) {
           <div class="brand-logo">🎟️</div>
           <div class="brand-text">
             <span class="brand-title">HaveTickets</span>
-            <span class="brand-tagline">NainDev Cinema Studio</span>
+            <span class="brand-tagline">{{ t('brandTagline') }}</span>
           </div>
         </div>
 
@@ -45,22 +46,44 @@ function onOrderPlaced(_order: OrderResponse) {
             :class="{ active: activeTab === 'catalog' && !selectedMovieId }"
             @click="goToCatalog"
           >
-            🎬 Movies
+            {{ t('movies') }}
           </button>
           <button
             class="nav-tab"
             :class="{ active: activeTab === 'wallet' }"
             @click="selectedMovieId = null; activeTab = 'wallet'"
           >
-            🎟️ My Passes
+            {{ t('myPasses') }}
           </button>
           <button
             class="nav-tab scanner-tab"
             :class="{ active: activeTab === 'scanner' }"
             @click="selectedMovieId = null; activeTab = 'scanner'"
           >
-            🚪 Door Turnstile
+            {{ t('doorTurnstile') }}
           </button>
+
+          <div class="lang-switch-group" role="group" aria-label="Language selector">
+            <button
+              type="button"
+              class="lang-btn"
+              :class="{ active: currentLocale === 'es' }"
+              @click="setLocale('es')"
+              aria-label="Español de España"
+            >
+              ES
+            </button>
+            <span class="lang-divider">|</span>
+            <button
+              type="button"
+              class="lang-btn"
+              :class="{ active: currentLocale === 'en' }"
+              @click="setLocale('en')"
+              aria-label="English"
+            >
+              EN
+            </button>
+          </div>
         </nav>
       </div>
     </header>
@@ -183,6 +206,46 @@ function onOrderPlaced(_order: OrderResponse) {
   background: rgba(16, 185, 129, 0.2);
   border-color: rgba(16, 185, 129, 0.4);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+.lang-switch-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  gap: 4px;
+  margin-left: 0.5rem;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.lang-btn:hover {
+  color: #ffffff;
+}
+
+.lang-btn.active {
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.18);
+}
+
+.lang-divider {
+  color: var(--border-subtle);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  user-select: none;
 }
 
 .main-content {
