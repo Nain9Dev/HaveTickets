@@ -50,3 +50,33 @@ This document specifies the functional and operational requirements for HaveTick
 ### REQ-TKT-009: Bilingual Interface & Ecosystem Synchronization
 - **Type**: Ubiquitous / Accessibility
 - **Statement**: The client interface shall provide Spanish and English language switching (`[ES | EN]`), persist user selection, synchronize with `nain:locale-change` custom events, and comply with WCAG 2.2 AA standards.
+
+---
+
+## Discoverability Requirements
+
+The public demo is the Blazor WebAssembly shell published to GitHub Pages; these requirements apply to the static files in `HaveTickets.WebUI/wwwroot/` that the browser receives.
+
+### REQ-TKT-010: Canonical URL and Description
+- **Type**: Ubiquitous / Discoverability
+- **Statement**: The entry page shall declare exactly one canonical link equal to `https://tickets.naindev.com/` and exactly one meta description of 70 to 160 characters.
+
+### REQ-TKT-011: Social Cards
+- **Type**: Event-driven
+- **Statement**: When a link to the demo is shared, the entry page shall expose Open Graph tags (`og:url` equal to the canonical, absolute `og:image`) and a `summary_large_image` Twitter card.
+
+### REQ-TKT-012: Structured Data and Author Link
+- **Type**: Ubiquitous / Discoverability
+- **Statement**: The entry page shall carry one `SoftwareApplication` JSON-LD block, with `<` escaped, whose author is `https://www.naindev.com/#person`, and a `rel="author"` link to `https://www.naindev.com/`.
+
+### REQ-TKT-013: Robots File
+- **Type**: Ubiquitous / Discoverability
+- **Statement**: The site root shall serve `robots.txt` that allows all crawlers, blocks nothing and advertises `https://tickets.naindev.com/sitemap.xml`.
+
+### REQ-TKT-014: Sitemap File
+- **Type**: Ubiquitous / Discoverability
+- **Statement**: The site root shall serve `sitemap.xml` listing the canonical root URL, as a real file and not the `404.html` single-page fallback.
+
+### REQ-TKT-015: LLMs File
+- **Type**: Ubiquitous / Discoverability
+- **Statement**: The site root shall serve `llms.txt` as Markdown whose first line is the H1 product name, followed by a one-line summary and key links.

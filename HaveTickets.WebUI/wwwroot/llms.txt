@@ -1,0 +1,7 @@
+# HaveTickets
+
+> Cinema ticketing and seat reservation demo built with .NET 10, Clean Architecture and Blazor WebAssembly, with a deterministic engine that prevents overbooking.
+
+- [Live demo](https://tickets.naindev.com/): browse movies and showtimes, pick seats and reserve tickets
+- [Source code](https://github.com/Nain9Dev/HaveTickets): domain, API, Blazor and Vue clients, architecture and concurrency tests
+- [NainDev](https://www.naindev.com/): the author's main site and project ecosystem
