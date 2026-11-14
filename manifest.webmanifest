@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "HaveTickets",
+  "short_name": "HaveTickets",
+  "description": "Cinema ticketing demo built with .NET 10 and Blazor WebAssembly: pick a movie and showtime, choose seats and reserve them with no overbooking.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
