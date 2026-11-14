@@ -19,3 +19,6 @@ This matrix traces each functional, domain invariant, and architectural requirem
 | **REQ-TKT-013** | Robots file | `HaveTickets.WebUI/wwwroot/robots.txt` | `SeoBaselineTests.cs` (`Robots_advertises_the_sitemap_and_blocks_nothing`) | Verified |
 | **REQ-TKT-014** | Sitemap file | `HaveTickets.WebUI/wwwroot/sitemap.xml` | `SeoBaselineTests.cs` (`Sitemap_lists_the_canonical_root`) | Verified |
 | **REQ-TKT-015** | LLMs file | `HaveTickets.WebUI/wwwroot/llms.txt` | `SeoBaselineTests.cs` (`Llms_txt_starts_with_a_heading`) | Verified |
+| **REQ-TKT-016** | Web app manifest | `HaveTickets.WebUI/wwwroot/manifest.webmanifest` | `PwaInstallTests.cs` (`Manifest_names_the_app_and_opens_it_standalone_from_the_root`) | Verified |
+| **REQ-TKT-017** | Install icons | `HaveTickets.WebUI/wwwroot/manifest.webmanifest`, `HaveTickets.WebUI/wwwroot/icons/` | `PwaInstallTests.cs` (`Manifest_icons_exist_at_the_declared_size`) | Verified |
+| **REQ-TKT-018** | Install head tags | `HaveTickets.WebUI/wwwroot/index.html`, `.github/workflows/deploy.yml` (copy to `404.html`) | `PwaInstallTests.cs` (`Entry_page_links_the_manifest_and_carries_the_ios_tags`, `Single_page_fallback_is_a_copy_of_the_entry_page`) | Verified |

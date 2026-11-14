@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="96" height="96">
+  <title>HaveTickets</title>
+  <rect width="1000" height="1000" rx="125" fill="#0a0a0f"/>
+  <g stroke-width="90" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path stroke="#f8fafc" d="M240 300V700M240 500H440M440 300V700"/>
+    <path stroke="#8b5cf6" d="M540 300H760M650 300V700"/>
+  </g>
+</svg>

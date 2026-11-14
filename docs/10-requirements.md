@@ -80,3 +80,21 @@ The public demo is the Blazor WebAssembly shell published to GitHub Pages; these
 ### REQ-TKT-015: LLMs File
 - **Type**: Ubiquitous / Discoverability
 - **Statement**: The site root shall serve `llms.txt` as Markdown whose first line is the H1 product name, followed by a one-line summary and key links.
+
+---
+
+## Installability Requirements
+
+The public demo installs from the browser on Android Chrome and iOS Safari. These requirements apply to the same static files in `HaveTickets.WebUI/wwwroot/`. The demo is installable only: it registers no service worker and keeps no cache.
+
+### REQ-TKT-016: Web App Manifest
+- **Type**: Ubiquitous / Installability
+- **Statement**: The site root shall serve `manifest.webmanifest` as valid JSON that declares `id`, `start_url` and `scope` as `./`, `display` as `standalone`, `name` and `short_name` as `HaveTickets`, `lang` as the language of the entry page (`en`), `dir` as `ltr`, the meta description of the entry page as `description`, and `theme_color` and `background_color` as `#0a0a0f`, without `prefer_related_applications`.
+
+### REQ-TKT-017: Install Icons
+- **Type**: Ubiquitous / Installability
+- **Statement**: The manifest shall declare three PNG icons that exist under `icons/` at the declared size, one purpose per entry: 192 px and 512 px with purpose `any`, and 512 px with purpose `maskable`.
+
+### REQ-TKT-018: Install Head Tags
+- **Type**: Ubiquitous / Installability
+- **Statement**: Every HTML document the site serves (the entry page and the `404.html` single-page fallback copied from it) shall link the manifest and a 180 px `apple-touch-icon`, and shall declare `mobile-web-app-capable` and `apple-mobile-web-app-capable` as `yes`, `apple-mobile-web-app-title` equal to the manifest `short_name`, `apple-mobile-web-app-status-bar-style` as `black` and `theme-color` equal to the manifest `theme_color`, with both links resolving from the site root on every route.
